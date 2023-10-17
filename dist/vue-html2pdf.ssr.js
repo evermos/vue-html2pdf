@@ -26,6 +26,10 @@ var script = {
 			type: Number
 		},
 
+		paddingElementAfterPaginated: {
+			type: Number
+		},
+
 		filename: {
 			type: String,
 			default: ("" + (new Date().getTime()))
@@ -122,7 +126,7 @@ var script = {
 			this.progress = 25;
 
 			/*
-				When this props is true, 
+				When this props is true,
 				the props paginate-elements-by-height will not be used.
 				Instead the pagination process will rely on the elements with a class "html2pdf__page-break"
 				to know where to page break, which is automatically done by html2pdf.js
@@ -135,7 +139,7 @@ var script = {
 			}
 
 			if (!this.hasAlreadyParsed) {
-				var parentElement = this.$refs.pdfContent.firstChild;
+				var parentElement = document.getElementById('pdf-parent-pagination') || this.$refs.pdfContent.firstChild;
 				var ArrOfContentChildren = Array.from(parentElement.children);
 				var childrenHeight = 0;
 
@@ -145,7 +149,9 @@ var script = {
 					a class named 'html2pdf__page-break' and insert the element before the element
 					that will be in the next page
 				*/
-				for (var childElement of ArrOfContentChildren) {
+
+				for (var i = 0; i < ArrOfContentChildren.length; i++){
+					var childElement = ArrOfContentChildren[i];
 					// Get The First Class of the element
 					var elementFirstClass = childElement.classList[0];
 					var isPageBreakClass = elementFirstClass === 'html2pdf__page-break';
@@ -153,24 +159,50 @@ var script = {
 						childrenHeight = 0;
 					} else {
 						// Get Element Height
-						var elementHeight = childElement.clientHeight;
+						var elementHeight = childElement.getBoundingClientRect().height;
 
 						// Get Computed Margin Top and Bottom
 						var elementComputedStyle = childElement.currentStyle || window.getComputedStyle(childElement);
 						var elementMarginTopBottom = parseInt(elementComputedStyle.marginTop) + parseInt(elementComputedStyle.marginBottom);
 
+						if (elementMarginTopBottom === 0) {
+							elementComputedStyle = childElement.getElementsByClassName('product-display')[0].currentStyle ||
+									window.getComputedStyle(childElement.getElementsByClassName('product-display')[0]);
+							elementMarginTopBottom = parseInt(elementComputedStyle.marginTop) + parseInt(elementComputedStyle.marginBottom);
+						}
+
 						// Add Both Element Height with the Elements Margin Top and Bottom
 						var elementHeightWithMargin = elementHeight + elementMarginTopBottom;
 
 						if ((childrenHeight + elementHeight) < this.paginateElementsByHeight) {
+							if (i === ArrOfContentChildren.length - 1) {
+
+								var diffLastHeight =  1120 - (this.paddingElementAfterPaginated * 2) - (childrenHeight + elementHeightWithMargin);
+								var section1 = document.createElement('div');
+								section1.style.height = diffLastHeight + 'px';
+								parentElement.insertAdjacentElement('beforeend', section1);
+							}
+
 							childrenHeight += elementHeightWithMargin;
 						} else {
 							var section = document.createElement('div');
 							section.classList.add('html2pdf__page-break');
 							parentElement.insertBefore(section, childElement);
 
+							// Add padding after paginated element
+							if (this.paddingElementAfterPaginated) {
+								childElement.style.marginTop = (this.paddingElementAfterPaginated) + "px";
+							}
+
 							// Reset Variables made the upper condition false
 							childrenHeight = elementHeightWithMargin;
+
+							if (i === ArrOfContentChildren.length - 1) {
+								var diffLastHeight$1 =  1120 - (this.paddingElementAfterPaginated * 2) - (elementHeightWithMargin);
+								var section1$1 = document.createElement('div');
+								section1$1.style.height = diffLastHeight$1 + 'px';
+								parentElement.insertAdjacentElement('beforeend', section1$1);
+							}
 						}
 					}
 				}
@@ -378,13 +410,13 @@ var __vue_staticRenderFns__ = [];
   /* style */
   var __vue_inject_styles__ = function (inject) {
     if (!inject) { return }
-    inject("data-v-1fd3ad26_0", { source: ".vue-html2pdf .layout-container[data-v-1fd3ad26]{position:fixed;width:100vw;height:100vh;left:-100vw;top:0;z-index:-9999;background:rgba(95,95,95,.8);display:flex;justify-content:center;align-items:flex-start;overflow:auto}.vue-html2pdf .layout-container.show-layout[data-v-1fd3ad26]{left:0;z-index:9999}.vue-html2pdf .layout-container.unset-all[data-v-1fd3ad26]{all:unset;width:auto;height:auto}.vue-html2pdf .pdf-preview[data-v-1fd3ad26]{position:fixed;width:65%;min-width:600px;height:80vh;top:100px;z-index:9999999;left:50%;transform:translateX(-50%);border-radius:5px;box-shadow:0 0 10px #00000048}.vue-html2pdf .pdf-preview button[data-v-1fd3ad26]{position:absolute;top:-20px;left:-15px;width:35px;height:35px;background:#555;border:0;box-shadow:0 0 10px #00000048;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer}.vue-html2pdf .pdf-preview iframe[data-v-1fd3ad26]{border:0}.vue-html2pdf .transition-anim-enter-active[data-v-1fd3ad26],.vue-html2pdf .transition-anim-leave-active[data-v-1fd3ad26]{transition:opacity .3s ease-in}.vue-html2pdf .transition-anim-enter[data-v-1fd3ad26],.vue-html2pdf .transition-anim-leave-to[data-v-1fd3ad26]{opacity:0}", map: undefined, media: undefined });
+    inject("data-v-13e8ad9e_0", { source: ".vue-html2pdf .layout-container[data-v-13e8ad9e]{position:fixed;width:100vw;height:100vh;left:-100vw;top:0;z-index:-9999;background:rgba(95,95,95,.8);display:flex;justify-content:center;align-items:flex-start;overflow:auto}.vue-html2pdf .layout-container.show-layout[data-v-13e8ad9e]{left:0;z-index:9999}.vue-html2pdf .layout-container.unset-all[data-v-13e8ad9e]{all:unset;width:auto;height:auto}.vue-html2pdf .pdf-preview[data-v-13e8ad9e]{position:fixed;width:65%;min-width:600px;height:80vh;top:100px;z-index:9999999;left:50%;transform:translateX(-50%);border-radius:5px;box-shadow:0 0 10px #00000048}.vue-html2pdf .pdf-preview button[data-v-13e8ad9e]{position:absolute;top:-20px;left:-15px;width:35px;height:35px;background:#555;border:0;box-shadow:0 0 10px #00000048;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer}.vue-html2pdf .pdf-preview iframe[data-v-13e8ad9e]{border:0}.vue-html2pdf .transition-anim-enter-active[data-v-13e8ad9e],.vue-html2pdf .transition-anim-leave-active[data-v-13e8ad9e]{transition:opacity .3s ease-in}.vue-html2pdf .transition-anim-enter[data-v-13e8ad9e],.vue-html2pdf .transition-anim-leave-to[data-v-13e8ad9e]{opacity:0}", map: undefined, media: undefined });
 
   };
   /* scoped */
-  var __vue_scope_id__ = "data-v-1fd3ad26";
+  var __vue_scope_id__ = "data-v-13e8ad9e";
   /* module identifier */
-  var __vue_module_identifier__ = "data-v-1fd3ad26";
+  var __vue_module_identifier__ = "data-v-13e8ad9e";
   /* functional template */
   var __vue_is_functional_template__ = false;
   /* style inject shadow dom */
